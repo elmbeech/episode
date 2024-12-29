@@ -1,0 +1,6 @@
+*.o
+ALL_CITATIONS.txt
+Dec_29_2024_1438.zip
+output*/
+project
+studio_debug.log
