@@ -48,9 +48,10 @@ int main(int argc, char* argv[]) {
     // EPISODE LOOP BEGIN //
     ////////////////////////
 
-    for (int i_episode=0; i_episode < 3; i_episode++)
+    for (int i_episode = 0; i_episode < 9; i_episode++)
     {
-        std::string folder = "output00" + std::to_string( i_episode);
+        std::cout << "run episode: " << i_episode << " !" << std::endl;
+        std::string folder = "output00" + std::to_string( i_episode % 3);
         mkdir( folder.c_str(), 0775 );
 
         ///////////
@@ -59,13 +60,13 @@ int main(int argc, char* argv[]) {
 
         // extract args take default if no args
         std::string settingxml = "config/PhysiCell_settings.xml";
-        if (i_episode == 0) {
+        if (i_episode % 3 == 0) {
             settingxml = "config/PhysiCell_settings_episode000.xml";
         } 
-        if (i_episode == 1) {
+        if (i_episode % 3 == 1) {
             settingxml = "config/PhysiCell_settings_episode001.xml";
         }
-        if (i_episode == 2) {
+        if (i_episode % 3 == 2) {
             settingxml = "config/PhysiCell_settings_episode002.xml";
         }
          
@@ -87,6 +88,9 @@ int main(int argc, char* argv[]) {
             XML_status = load_PhysiCell_config_file(settingxml, update_variables);
             if (!XML_status) { exit(-1); }
         }
+
+        // set random max time in range
+        PhysiCell_settings.max_time = 1440 + (std::rand() % (10080 - 1440 + 1));
 
         // copy config file to output directory
         char copy_command [1024];

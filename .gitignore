@@ -4,3 +4,7 @@ Dec_29_2024_1438.zip
 output*/
 project
 studio_debug.log
+
+timeseries_cell_episode*.csv
+timeseries_conc_episode*.csv
+timeseries_plot_episode*.png

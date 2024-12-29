@@ -23,7 +23,7 @@
     </overall>
 
     <parallel>
-        <omp_num_threads>1</omp_num_threads>
+        <omp_num_threads>16</omp_num_threads>
     </parallel>
 
     <save>
@@ -51,7 +51,7 @@
         <legacy_random_points_on_sphere_in_divide>false</legacy_random_points_on_sphere_in_divide>
         <virtual_wall_at_domain_edge>true</virtual_wall_at_domain_edge>
         <disable_automated_spring_adhesions>false</disable_automated_spring_adhesions>
-        <random_seed>0</random_seed>
+        <random_seed>system_clock</random_seed>
     </options>
 
     <microenvironment_setup>
