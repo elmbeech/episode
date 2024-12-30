@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
     // EPISODE LOOP BEGIN //
     ////////////////////////
 
-    for (int i_episode = 0; i_episode < 9; i_episode++)
+    for (int i_episode = 0; i_episode < 32; i_episode++)
     {
         std::cout << "run episode: " << i_episode << " !" << std::endl;
         std::string folder = "output00" + std::to_string( i_episode % 3);
@@ -172,6 +172,11 @@ int main(int argc, char* argv[]) {
             std::cout << "load setting xml " << settingxml << " ..." << std::endl;
             std::cout << "reset user parameters ..." << std::endl;
             std::cout << "reset densities ..." << std::endl;
+
+            // reset global variables
+            PhysiCell_globals = PhysiCell_Globals();  // bue 20240624: reset
+
+            // load xml file
             bool XML_status = false;
             XML_status = load_PhysiCell_config_file(settingxml, update_variables);
             if (!XML_status) { exit(-1); }
@@ -179,42 +184,46 @@ int main(int argc, char* argv[]) {
             // set random max time in range
             PhysiCell_settings.max_time = 1440 + (std::rand() % (10080 - 1440 + 1));
 
-            // copy config file to output directory
-            char copy_command [1024];
-            sprintf(copy_command, "cp %s %s", settingxml.c_str(), PhysiCell_settings.folder.c_str());
-            system(copy_command);
-
-            // reset global variables
-            PhysiCell_globals = PhysiCell_Globals();  // bue 20240624: reset
-
             // OpenMP setup
             omp_set_num_threads(PhysiCell_settings.omp_num_threads);
 
             // time setup
             std::string time_units = "min";
 
+
+
             // Microenvironment setup //
-            setup_microenvironment();  // modify this in the custom code
+            //setup_microenvironment();  // modify this in the custom code
 
             // PhysiCell setup //
 
             // set mechanics voxel size, and match the data structure to BioFVM
-            double mechanics_voxel_size = 30;
-            Cell_Container* cell_container = create_cell_container_for_microenvironment(microenvironment, mechanics_voxel_size);
+            //double mechanics_voxel_size = 30;
+            //Cell_Container* cell_container = create_cell_container_for_microenvironment(microenvironment, mechanics_voxel_size);
+
 
             // Users typically start modifying here.
-            reset_cell_types();  // bue 20240624: delete cells; reload cell type definitions
-            setup_tissue();
+            //reset_cell_types();  // bue 20240624: delete cells; reload cell type definitions
+            //setup_tissue();
             // Users typically stop modifying here.
 
-            // set MultiCellDS save options
-            set_save_biofvm_mesh_as_matlab(true);
-            set_save_biofvm_data_as_matlab(true);
-            set_save_biofvm_cell_data(true);
-            set_save_biofvm_cell_data_as_custom_matlab(true);
-
             // bue 20240624: reset mesh0
-            BioFVM::reset_BioFVM_substrates_initialized_in_dom();
+            //BioFVM::reset_BioFVM_substrates_initialized_in_dom();
+
+
+
+            // set MultiCellDS save options
+            // bue 20241230: think it's save to set only once while loading the first xml. in any case, seems not to cause core dumped.
+            //set_save_biofvm_mesh_as_matlab(true);
+            //set_save_biofvm_data_as_matlab(true);
+            //set_save_biofvm_cell_data(true);
+            //set_save_biofvm_cell_data_as_custom_matlab(true);
+
+
+            // copy config file to output directory
+            char copy_command [1024];
+            sprintf(copy_command, "cp %s %s", settingxml.c_str(), PhysiCell_settings.folder.c_str());
+            system(copy_command);
 
             // save initial data simulation snapshot
             sprintf(filename, "%s/initial", PhysiCell_settings.folder.c_str());
@@ -229,10 +238,10 @@ int main(int argc, char* argv[]) {
             // save initial svg cross section through z = 0 and legend
             PhysiCell_SVG_options.length_bar = 200;  // set cross section length bar to 200 microns
 
-            sprintf(filename, "%s/legend.svg", PhysiCell_settings.folder.c_str());
+            //sprintf(filename, "%s/legend.svg", PhysiCell_settings.folder.c_str());
             create_plot_legend(filename, cell_coloring_function);
 
-            sprintf(filename, "%s/initial.svg", PhysiCell_settings.folder.c_str());
+            //sprintf(filename, "%s/initial.svg", PhysiCell_settings.folder.c_str());
             SVG_plot(filename, microenvironment, 0.0, PhysiCell_globals.current_time, cell_coloring_function, substrate_coloring_function);
 
             // save svg cross section snapshot00000000
@@ -248,6 +257,7 @@ int main(int argc, char* argv[]) {
                 report_file << "simulated time\tnum cells\tnum division\tnum death\twall time" << std::endl;
                 log_output(PhysiCell_globals.current_time, PhysiCell_globals.full_output_index, microenvironment, report_file);  // output00000000
             }
+
 
             // standard output
             display_citations();

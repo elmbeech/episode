@@ -1,6 +1,6 @@
 # episode
 
-### installation
+## installation
 
 ```bash
 git clone https://github.com/elmbeech/episode.git
@@ -9,7 +9,7 @@ make
 ./project
 ```
 
-### changes compare to current PhysiCell version 1.14.1
+## changes compare to current PhysiCell version 1.14.1
 
 1. PhysiCell `pull request 298` merged ( https://github.com/MathCancer/PhysiCell/pull/298 )
 1. `main.cpp`  adapted to run multiple episodes
@@ -17,7 +17,7 @@ make
 1. `config/PhysiCell_settings.xml` morphed into `config/PhysiCell_settings_episode000.xml`, `config/PhysiCell_settings_episode001.xml`, `config/PhysiCell_settings_episode002.xml`.
 
 
-### test flight
+## test flight
 + 2025-12-29: run 3 episodes, 7200 min, omp_num_threads 1, random_seed 0  => check for same output. ok.
 + 2025-12-29: run 3 episodes, 7200 min, omp_num_threads 16, random_seed 0 => check for different output. ok.
 + 2025-12-29: run 9 episodes, 7200 min, omp_num_threads 16, random_seed system_clock => check for different output. ok.
@@ -27,7 +27,7 @@ SOMETIMES THE EPOCH WORKS FINE.
 SOMETIMES THE EPOCH RUNS INTO A CORE DUMPED (always at delete cells: custom_modules/custom.cpp ~ line 72.
 
 
-### using the gnu debugger (on a linux)
+## using the gnu debugger (on a linux)
 
 Amazing blog post: https://askubuntu.com/questions/1349047/where-do-i-find-core-dump-files-and-how-do-i-view-and-analyze-the-backtrace-st
 
@@ -44,3 +44,17 @@ alternatively, run c++ executable inside gdb
 1. gdb ./project
 1. r  (run) 
 1. bt (back trace)
+
+
+## notes
+things i noticed and i am not sure if physicell is supposded to run like this.
+
+1. random seed can nonly be set once. if set a second time (by relloading the xml file) we ge the waring.
+```
+WARNING: Setting the random seed again.
+	You probably have set a user parameter called random_seed.
+	Here, we will use the random seed set in user parameters.
+	HOWEVER, as of PhysiCell 1.14.0, you should set the random seed in the <options><random_seed> element in the config file.
+	Future versions of PhysiCell may throw an error here. Kindly remove the user parameter and just use the <options><random_seed> element.
+```
+
