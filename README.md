@@ -28,9 +28,19 @@ SOMETIMES THE EPOCH RUNS INTO A CORE DUMPED (always at delete cells: custom_modu
 
 
 ### using the gnu debugger (on a linux)
-1. in the Make fiel add -ggdb -O0 (or -g) flag to the compile command (to generate a debug symbol table).
+
+Amazing blog post: https://askubuntu.com/questions/1349047/where-do-i-find-core-dump-files-and-how-do-i-view-and-analyze-the-backtrace-st
+
+1. in the Make fiel add -ggdb -O0 flag to the compile command to generate a debug symbol table (-g optimized for gdb, code compiled with zero optimization) .
+
+analyze a core dump
 1. at the command line run `ulimit -c` to see the max dumpfile size
-1. at the command line run `ulimit -c unlimited` befor every run you expect a core dump.
+1. at the command line run `ulimit -c unlimited` on the terminal you run the code that dumps.
 1. at `/var/log/apport.log` figure out the corde dumped file name.
 1. at `/var/lib/apport/coredump/` is the file to find.
-1. `gdb /var/lib/apport/coredump/<filename>`
+1. fire up gdb with executable and dumpfile like this: `gdb ./project /var/lib/apport/coredump/<filename>`
+
+alternatively, run c++ executable inside gdb
+1. gdb ./project
+1. r  (run) 
+1. bt (back trace)
