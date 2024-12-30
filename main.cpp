@@ -71,6 +71,11 @@ int main(int argc, char* argv[]) {
         }
 
         // handle settings file (modules/PhysiCell_settings.cpp).
+        char filename[1024];
+        std::ofstream report_file;
+        std::vector<std::string> (*cell_coloring_function)(Cell*) = my_coloring_function;  // set a pathology coloring function
+        std::string (*substrate_coloring_function)(double, double, double) = paint_by_density_percentage;
+
         if (!update_variables) {
             // bue 20240624: load parameter and density definitions
             std::cout << "load setting xml " << settingxml << " ..." << std::endl;
@@ -122,7 +127,6 @@ int main(int argc, char* argv[]) {
             BioFVM::reset_BioFVM_substrates_initialized_in_dom();
 
             // save initial data simulation snapshot
-            char filename[1024];
             sprintf(filename, "%s/initial", PhysiCell_settings.folder.c_str());
             save_PhysiCell_to_MultiCellDS_v2(filename, microenvironment, PhysiCell_globals.current_time);
 
@@ -134,8 +138,6 @@ int main(int argc, char* argv[]) {
 
             // save initial svg cross section through z = 0 and legend
             PhysiCell_SVG_options.length_bar = 200;  // set cross section length bar to 200 microns
-            std::vector<std::string> (*cell_coloring_function)(Cell*) = my_coloring_function;  // set a pathology coloring function
-            std::string (*substrate_coloring_function)(double, double, double) = paint_by_density_percentage;
 
             sprintf(filename, "%s/legend.svg", PhysiCell_settings.folder.c_str());
             create_plot_legend(filename, cell_coloring_function);
@@ -150,7 +152,6 @@ int main(int argc, char* argv[]) {
             }
 
             // save legacy simulation report
-            std::ofstream report_file;
             if (PhysiCell_settings.enable_legacy_saves == true) {
                 sprintf(filename, "%s/simulation_report.txt", PhysiCell_settings.folder.c_str());
                 report_file.open(filename);  // create the data log file
@@ -216,7 +217,6 @@ int main(int argc, char* argv[]) {
             BioFVM::reset_BioFVM_substrates_initialized_in_dom();
 
             // save initial data simulation snapshot
-            char filename[1024];
             sprintf(filename, "%s/initial", PhysiCell_settings.folder.c_str());
             save_PhysiCell_to_MultiCellDS_v2(filename, microenvironment, PhysiCell_globals.current_time);
 
@@ -228,8 +228,6 @@ int main(int argc, char* argv[]) {
 
             // save initial svg cross section through z = 0 and legend
             PhysiCell_SVG_options.length_bar = 200;  // set cross section length bar to 200 microns
-            std::vector<std::string> (*cell_coloring_function)(Cell*) = my_coloring_function;  // set a pathology coloring function
-            std::string (*substrate_coloring_function)(double, double, double) = paint_by_density_percentage;
 
             sprintf(filename, "%s/legend.svg", PhysiCell_settings.folder.c_str());
             create_plot_legend(filename, cell_coloring_function);
@@ -244,7 +242,6 @@ int main(int argc, char* argv[]) {
             }
 
             // save legacy simulation report
-            std::ofstream report_file;
             if (PhysiCell_settings.enable_legacy_saves == true) {
                 sprintf(filename, "%s/simulation_report.txt", PhysiCell_settings.folder.c_str());
                 report_file.open(filename);  // create the data log file
