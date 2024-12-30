@@ -18,10 +18,10 @@ make
 
 
 ## test flight
-+ 2025-12-29: run 3 episodes, 7200 min, omp_num_threads 1, random_seed 0  => check for same output. ok.
-+ 2025-12-29: run 3 episodes, 7200 min, omp_num_threads 16, random_seed 0 => check for different output. ok.
-+ 2025-12-29: run 9 episodes, 7200 min, omp_num_threads 16, random_seed system_clock => check for different output. ok.
-+ 2025-12-29: run 9 episodes, random max time between 1440 min and 10080 min (1 day and 7 days), omp_num_threads 16, random_seed system_clock => check for different output. ok.
++ 2024-12-29: run 3 episodes, 7200 min, omp_num_threads 1, random_seed 0  => check for same output. ok.
++ 2024-12-29: run 3 episodes, 7200 min, omp_num_threads 16, random_seed 0 => check for different output. ok.
++ 2024-12-29: run 9 episodes, 7200 min, omp_num_threads 16, random_seed system_clock => check for different output. ok.
++ 2024-12-29: run 9 episodes, random max time between 1440 min and 10080 min (1 day and 7 days), omp_num_threads 16, random_seed system_clock => check for different output. ok.
 
 SOMETIMES THE EPOCH WORKS FINE.
 SOMETIMES THE EPOCH RUNS INTO A CORE DUMPED (always at delete cells: custom_modules/custom.cpp ~ line 72.
@@ -44,7 +44,14 @@ alternatively, run c++ executable inside gdb
 1. gdb ./project
 1. r  (run) 
 1. bt (back trace)
+1. bt full (back trace)
 
+
+## generating core dumps.
+
+1. 2024-12-30: running custom.cpp `setup_microenvironment();` is NOT causing core dump.
+1. 2024-12-30: running custom.cpp `setup_tissue();` can cause core dump (PhysiCell::add_PhysiCell_cells_to_open_xml_pugi_v2())!
+1. 2024-12-30: running custom.cpp `reset_cell_types()d;` can cause core dump (BioFVM::Basic_Agent::release_internalized_substrates())!
 
 ## notes
 things i noticed and i am not sure if physicell is supposded to run like this.

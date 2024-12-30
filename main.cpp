@@ -192,28 +192,32 @@ int main(int argc, char* argv[]) {
 
 
 
+            // bue 20240624: reset mesh0
+            // bue 20241230: seem as such not to cause core dump!
+            BioFVM::reset_BioFVM_substrates_initialized_in_dom();
+
             // Microenvironment setup //
-            //setup_microenvironment();  // modify this in the custom code
+            // bue 20241230: seem as such not to cause core dump ...
+            setup_microenvironment();  // modify this in the custom code
 
             // PhysiCell setup //
 
             // set mechanics voxel size, and match the data structure to BioFVM
-            //double mechanics_voxel_size = 30;
-            //Cell_Container* cell_container = create_cell_container_for_microenvironment(microenvironment, mechanics_voxel_size);
+            // bue 20241230: seem as such not to cause core dump ...
+            double mechanics_voxel_size = 30;
+            Cell_Container* cell_container = create_cell_container_for_microenvironment(microenvironment, mechanics_voxel_size);
 
 
             // Users typically start modifying here.
-            //reset_cell_types();  // bue 20240624: delete cells; reload cell type definitions
-            //setup_tissue();
+            reset_cell_types();  // bue 20240624: delete cells; reload cell type definitions
+            setup_tissue();
             // Users typically stop modifying here.
 
-            // bue 20240624: reset mesh0
-            //BioFVM::reset_BioFVM_substrates_initialized_in_dom();
 
 
 
             // set MultiCellDS save options
-            // bue 20241230: think it's save to set only once while loading the first xml. in any case, seems not to cause core dumped.
+            // bue 20241230: think it's save to set only once while loading the first xml. in any case, seems not to cause core dump.
             //set_save_biofvm_mesh_as_matlab(true);
             //set_save_biofvm_data_as_matlab(true);
             //set_save_biofvm_cell_data(true);
