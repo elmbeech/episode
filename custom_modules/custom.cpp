@@ -66,49 +66,36 @@ void generate_cell_types(void) {
 }
 
 
-void reset_cell_types(void) {
-    //std::cout << "bue: reset cell types begin ..." << std::endl;
-    // delete cells
-    //for (Cell* pCell: (*all_cells)) {
-    //    pCell->die();
-    //}
-    //std::cout << "bue: reset cell types end ..." << std::endl;
-
-    // reset cell ID counter (BioFVM/BioFVM_basic_agent.cpp)
-    // bue 20240608: not strictely necessary!
-    //std::cout << "bue: reset agent ID begin." << std::endl;
-    //BioFVM::reset_max_basic_agent_ID();
-    //std::cout << "bue: reset agent ID end." << std::endl;
-
+void reload_cell_types(void) {
     // cell_default initial definition
     // NOP!
 
     // parse the cell definitions in the XML config file (core/PhysiCell_cell.cpp).
-    //std::cout << "bue: initialize cell definitions begin." << std::endl;
-    //initialize_cell_definitions_from_pugixml();
-    //std::cout << "bue: initialize cell definitions end." << std::endl;
+    std::cout << "bue: initialize cell definitions begin." << std::endl;
+    initialize_cell_definitions_from_pugixml();
+    std::cout << "bue: initialize cell definitions end." << std::endl;
 
     // generate the maps of cell definitions.
-    //std::cout << "bue: build cell definition maps begin." << std::endl;
-    //build_cell_definitions_maps();
-    //std::cout << "bue: build cell definition maps end." << std::endl;
+    std::cout << "bue: build cell definition maps begin." << std::endl;
+    build_cell_definitions_maps();
+    std::cout << "bue: build cell definition maps end." << std::endl;
 
     // intializes cell signal and response dictionaries
-    //std::cout << "bue: setup signal behavior dictionaries begin." << std::endl;
-    //setup_signal_behavior_dictionaries();
-    //std::cout << "bue: setup signal behavior dictionaries end." << std::endl;
+    std::cout << "bue: setup signal behavior dictionaries begin." << std::endl;
+    setup_signal_behavior_dictionaries();
+    std::cout << "bue: setup signal behavior dictionaries end." << std::endl;
 
     // initializ cell rule definitions
-    //std::cout << "bue: setup cell rules begin." << std::endl;
-    //setup_cell_rules();
-    //std::cout << "bue: setup cell rules end." << std::endl;
+    std::cout << "bue: setup cell rules begin." << std::endl;
+    setup_cell_rules();
+    std::cout << "bue: setup cell rules end." << std::endl;
 
     // Put any modifications to individual cell definitions here.
     // This is a good place to set custom functions.
     // NOP!
 
     // summarize the cell defintion setup.
-    //display_cell_definitions(std::cout);
+    display_cell_definitions(std::cout);
 
     return;
 }

@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
     // EPISODE LOOP BEGIN //
     ////////////////////////
 
-    for (int i_episode = 0; i_episode < 1024; i_episode++)
+    for (int i_episode = 0; i_episode < 16; i_episode++)
     {
         std::cout << "run episode: " << i_episode << " !" << std::endl;
         std::string folder = "output00" + std::to_string( i_episode % 3);
@@ -76,36 +76,32 @@ int main(int argc, char* argv[]) {
         std::vector<std::string> (*cell_coloring_function)(Cell*) = my_coloring_function;  // set a pathology coloring function
         std::string (*substrate_coloring_function)(double, double, double) = paint_by_density_percentage;
 
+        // reset global variables
+        PhysiCell_globals = PhysiCell_Globals();  // bue 20240624: reset
+
+        // time setup
+        //// bue 20241230: think it's save to set only once while loading the first xml. in any case, seems not to cause core dump.
+        std::string time_units = "min";
+
+        // load xml file
+        std::cout << "load setting xml " << settingxml << " ..." << std::endl;
+        bool XML_status = false;
+        XML_status = load_PhysiCell_config_file(settingxml, update_variables);
+        if (!XML_status) { exit(-1); }
+
+        // set random max time in range
+        PhysiCell_settings.max_time = 1440 + (std::rand() % (10080 - 1440 + 1));
+
+        // OpenMP setup
+        omp_set_num_threads(PhysiCell_settings.omp_num_threads);
+
         if (!update_variables) {
             // bue 20240624: load parameter and density definitions
-            std::cout << "load setting xml " << settingxml << " ..." << std::endl;
             std::cout << "set user parameters ..." << std::endl;
             std::cout << "set densities ..." << std::endl;
-            bool XML_status = false;
-            XML_status = load_PhysiCell_config_file(settingxml, update_variables);
-            if (!XML_status) { exit(-1); }
-
-            // set random max time in range
-            PhysiCell_settings.max_time = 1440 + (std::rand() % (10080 - 1440 + 1));
-
-            // copy config file to output directory
-            char copy_command [1024];
-            sprintf(copy_command, "cp %s %s", settingxml.c_str(), PhysiCell_settings.folder.c_str());
-            system(copy_command);
-
-            // reset global variables
-            PhysiCell_globals = PhysiCell_Globals();  // bue 20240624: reset
-
-            // OpenMP setup
-            omp_set_num_threads(PhysiCell_settings.omp_num_threads);
-
-            // time setup
-            std::string time_units = "min";
 
             // Microenvironment setup //
-            setup_microenvironment();  // modify this in the custom code
-
-            // PhysiCell setup //
+            setup_microenvironment(update_variables);  // modify this in the custom code
 
             // set mechanics voxel size, and match the data structure to BioFVM
             double mechanics_voxel_size = 30;
@@ -123,128 +119,29 @@ int main(int argc, char* argv[]) {
             set_save_biofvm_cell_data(true);
             set_save_biofvm_cell_data_as_custom_matlab(true);
 
-            // bue 20240624: reset mesh0
-            BioFVM::reset_BioFVM_substrates_initialized_in_dom();
-
-            // save initial data simulation snapshot
-            sprintf(filename, "%s/initial", PhysiCell_settings.folder.c_str());
-            save_PhysiCell_to_MultiCellDS_v2(filename, microenvironment, PhysiCell_globals.current_time);
-
-            // save data simulation snapshot output00000000
-            if (PhysiCell_settings.enable_full_saves == true) {
-                sprintf(filename, "%s/output%08u", PhysiCell_settings.folder.c_str(),  PhysiCell_globals.full_output_index);
-                save_PhysiCell_to_MultiCellDS_v2(filename, microenvironment, PhysiCell_globals.current_time);
-            }
-
-            // save initial svg cross section through z = 0 and legend
-            PhysiCell_SVG_options.length_bar = 200;  // set cross section length bar to 200 microns
-
-            sprintf(filename, "%s/legend.svg", PhysiCell_settings.folder.c_str());
-            create_plot_legend(filename, cell_coloring_function);
-
-            sprintf(filename, "%s/initial.svg", PhysiCell_settings.folder.c_str());
-            SVG_plot(filename, microenvironment, 0.0, PhysiCell_globals.current_time, cell_coloring_function, substrate_coloring_function);
-
-            // save svg cross section snapshot00000000
-            if (PhysiCell_settings.enable_SVG_saves == true) {
-                sprintf(filename, "%s/snapshot%08u.svg", PhysiCell_settings.folder.c_str(), PhysiCell_globals.SVG_output_index);
-                SVG_plot(filename, microenvironment, 0.0, PhysiCell_globals.current_time, cell_coloring_function, substrate_coloring_function);
-            }
-
-            // save legacy simulation report
-            if (PhysiCell_settings.enable_legacy_saves == true) {
-                sprintf(filename, "%s/simulation_report.txt", PhysiCell_settings.folder.c_str());
-                report_file.open(filename);  // create the data log file
-                report_file << "simulated time\tnum cells\tnum division\tnum death\twall time" << std::endl;
-                log_output(PhysiCell_globals.current_time, PhysiCell_globals.full_output_index, microenvironment, report_file);  // output00000000
-            }
-
-            // standard output
-            display_citations();
-            display_simulation_status(std::cout);  // output00000000
-
-            // set the performance timers
-            BioFVM::RUNTIME_TIC();
-            BioFVM::TIC();
-
         } else {
             // bue 20240624: overload parameter and density definitions
-            std::cout << "load setting xml " << settingxml << " ..." << std::endl;
             std::cout << "reset user parameters ..." << std::endl;
             std::cout << "reset densities ..." << std::endl;
 
-            // reset global variables
-            PhysiCell_globals = PhysiCell_Globals();  // bue 20240624: reset
-
-            // load xml file
-            bool XML_status = false;
-            XML_status = load_PhysiCell_config_file(settingxml, update_variables);
-            if (!XML_status) { exit(-1); }
-
-            // set random max time in range
-            PhysiCell_settings.max_time = 1440 + (std::rand() % (10080 - 1440 + 1));
-
-            // OpenMP setup
-            //// bue 20241230: think it's save to set only once while loading the first xml. in any case, seems not to cause core dump.
-            //omp_set_num_threads(PhysiCell_settings.omp_num_threads);
-
-            // time setup
-            //// bue 20241230: think it's save to set only once while loading the first xml. in any case, seems not to cause core dump.
-            //std::string time_units = "min";
-
-            // delete cells
+            // reset cells
             for (Cell* pCell: (*all_cells)) {
                 pCell->die();
             }
-
-            // reset cell ID counter (BioFVM/BioFVM_basic_agent.cpp)
-            // bue 20240608: not strictely necessary!
-            std::cout << "bue: reset agent ID begin." << std::endl;
             BioFVM::reset_max_basic_agent_ID();
-            std::cout << "bue: reset agent ID end." << std::endl;
 
             // bue 20240624: reset mesh0
-            // bue 20241230: seem as such not to cause core dump!
             BioFVM::reset_BioFVM_substrates_initialized_in_dom();
 
-
-            // Microenvironment setup //
-            // bue 20241230: seem as such not to cause core dump ...
+            // bue 20241231: reset microenvironment
             setup_microenvironment(update_variables);  // modify this in the custom code
             double mechanics_voxel_size = 30;
             Cell_Container* cell_container = create_cell_container_for_microenvironment(microenvironment, mechanics_voxel_size);
 
-
-            // Cell definitionvsetup //
-            // parse the cell definitions in the XML config file (core/PhysiCell_cell.cpp).
-            std::cout << "bue: initialize cell definitions begin." << std::endl;
-            initialize_cell_definitions_from_pugixml();
-            std::cout << "bue: initialize cell definitions end." << std::endl;
-
-            // generate the maps of cell definitions.
-            std::cout << "bue: build cell definition maps begin." << std::endl;
-            build_cell_definitions_maps();
-            std::cout << "bue: build cell definition maps end." << std::endl;
-
-
-            // Signal and rules setup //
-            // intializes cell signal and response dictionaries
-            std::cout << "bue: setup signal behavior dictionaries begin." << std::endl;
-            setup_signal_behavior_dictionaries();
-            std::cout << "bue: setup signal behavior dictionaries end." << std::endl;
-
-            // initializ cell rule definitions
-            std::cout << "bue: setup cell rules begin." << std::endl;
-            setup_cell_rules();
-            std::cout << "bue: setup cell rules end." << std::endl;
-
-            // summarize the cell defintion setup.
-            display_cell_definitions(std::cout);
-
-
-            //Tissue setup //
+            // Users typically start modifying here.
+            reload_cell_types();  // bue 20240624: reset cell type definitions
             setup_tissue();
-
+            // Users typically stop modifying here.
 
             //// set MultiCellDS save options
             //// bue 20241230: think it's save to set only once while loading the first xml. in any case, seems not to cause core dump.
@@ -252,56 +149,54 @@ int main(int argc, char* argv[]) {
             ////set_save_biofvm_data_as_matlab(true);
             ////set_save_biofvm_cell_data(true);
             ////set_save_biofvm_cell_data_as_custom_matlab(true);
-
-
-            // copy config file to output directory
-            char copy_command [1024];
-            sprintf(copy_command, "cp %s %s", settingxml.c_str(), PhysiCell_settings.folder.c_str());
-            system(copy_command);
-
-            // save initial data simulation snapshot
-            sprintf(filename, "%s/initial", PhysiCell_settings.folder.c_str());
-            save_PhysiCell_to_MultiCellDS_v2(filename, microenvironment, PhysiCell_globals.current_time);
-
-            // save data simulation snapshot output00000000
-            if (PhysiCell_settings.enable_full_saves == true) {
-                sprintf(filename, "%s/output%08u", PhysiCell_settings.folder.c_str(),  PhysiCell_globals.full_output_index);
-                save_PhysiCell_to_MultiCellDS_v2(filename, microenvironment, PhysiCell_globals.current_time);
-            }
-
-            // save initial svg cross section through z = 0 and legend
-            PhysiCell_SVG_options.length_bar = 200;  // set cross section length bar to 200 microns
-
-            //sprintf(filename, "%s/legend.svg", PhysiCell_settings.folder.c_str());
-            create_plot_legend(filename, cell_coloring_function);
-
-            //sprintf(filename, "%s/initial.svg", PhysiCell_settings.folder.c_str());
-            SVG_plot(filename, microenvironment, 0.0, PhysiCell_globals.current_time, cell_coloring_function, substrate_coloring_function);
-
-            // save svg cross section snapshot00000000
-            if (PhysiCell_settings.enable_SVG_saves == true) {
-                sprintf(filename, "%s/snapshot%08u.svg", PhysiCell_settings.folder.c_str(), PhysiCell_globals.SVG_output_index);
-                SVG_plot(filename, microenvironment, 0.0, PhysiCell_globals.current_time, cell_coloring_function, substrate_coloring_function);
-            }
-
-            // save legacy simulation report
-            if (PhysiCell_settings.enable_legacy_saves == true) {
-                sprintf(filename, "%s/simulation_report.txt", PhysiCell_settings.folder.c_str());
-                report_file.open(filename);  // create the data log file
-                report_file << "simulated time\tnum cells\tnum division\tnum death\twall time" << std::endl;
-                log_output(PhysiCell_globals.current_time, PhysiCell_globals.full_output_index, microenvironment, report_file);  // output00000000
-            }
-
-
-            // standard output
-            display_citations();
-            display_simulation_status(std::cout);  // output00000000
-
-            // set the performance timers
-            BioFVM::RUNTIME_TIC();
-            BioFVM::TIC();
-
         }
+
+        // copy config file to output directory
+        char copy_command [1024];
+        sprintf(copy_command, "cp %s %s", settingxml.c_str(), PhysiCell_settings.folder.c_str());
+        system(copy_command);
+
+        // save initial data simulation snapshot
+        sprintf(filename, "%s/initial", PhysiCell_settings.folder.c_str());
+        save_PhysiCell_to_MultiCellDS_v2(filename, microenvironment, PhysiCell_globals.current_time);
+
+        // save data simulation snapshot output00000000
+        if (PhysiCell_settings.enable_full_saves == true) {
+            sprintf(filename, "%s/output%08u", PhysiCell_settings.folder.c_str(),  PhysiCell_globals.full_output_index);
+            save_PhysiCell_to_MultiCellDS_v2(filename, microenvironment, PhysiCell_globals.current_time);
+        }
+
+        // save initial svg cross section through z = 0 and legend
+        PhysiCell_SVG_options.length_bar = 200;  // set cross section length bar to 200 microns
+
+        sprintf(filename, "%s/legend.svg", PhysiCell_settings.folder.c_str());
+        create_plot_legend(filename, cell_coloring_function);
+
+        sprintf(filename, "%s/initial.svg", PhysiCell_settings.folder.c_str());
+        SVG_plot(filename, microenvironment, 0.0, PhysiCell_globals.current_time, cell_coloring_function, substrate_coloring_function);
+
+        // save svg cross section snapshot00000000
+        if (PhysiCell_settings.enable_SVG_saves == true) {
+            sprintf(filename, "%s/snapshot%08u.svg", PhysiCell_settings.folder.c_str(), PhysiCell_globals.SVG_output_index);
+            SVG_plot(filename, microenvironment, 0.0, PhysiCell_globals.current_time, cell_coloring_function, substrate_coloring_function);
+        }
+
+        // save legacy simulation report
+        if (PhysiCell_settings.enable_legacy_saves == true) {
+            sprintf(filename, "%s/simulation_report.txt", PhysiCell_settings.folder.c_str());
+            report_file.open(filename);  // create the data log file
+            report_file << "simulated time\tnum cells\tnum division\tnum death\twall time" << std::endl;
+            log_output(PhysiCell_globals.current_time, PhysiCell_globals.full_output_index, microenvironment, report_file);  // output00000000
+        }
+
+
+        // standard output
+        display_citations();
+        display_simulation_status(std::cout);  // output00000000
+
+        // set the performance timers
+        BioFVM::RUNTIME_TIC();
+        BioFVM::TIC();
 
 
         //////////
