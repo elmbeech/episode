@@ -23,7 +23,7 @@ void reset_cell_types(void);
 void setup_tissue(void);
 
 // set up the BioFVM microenvironment
-void setup_microenvironment(void);
+void setup_microenvironment(bool update_variables = false);
 
 // custom pathology coloring function
 std::vector<std::string> my_coloring_function(Cell*);

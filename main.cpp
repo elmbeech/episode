@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
     // EPISODE LOOP BEGIN //
     ////////////////////////
 
-    for (int i_episode = 0; i_episode < 32; i_episode++)
+    for (int i_episode = 0; i_episode < 1024; i_episode++)
     {
         std::cout << "run episode: " << i_episode << " !" << std::endl;
         std::string folder = "output00" + std::to_string( i_episode % 3);
@@ -113,8 +113,8 @@ int main(int argc, char* argv[]) {
 
             // Users typically start modifying here.
             generate_cell_types();  // bue 20240624: load cell type definitions
-            update_variables = true;
             setup_tissue();
+            update_variables = true;
             // Users typically stop modifying here.
 
             // set MultiCellDS save options
@@ -185,43 +185,73 @@ int main(int argc, char* argv[]) {
             PhysiCell_settings.max_time = 1440 + (std::rand() % (10080 - 1440 + 1));
 
             // OpenMP setup
-            omp_set_num_threads(PhysiCell_settings.omp_num_threads);
+            //// bue 20241230: think it's save to set only once while loading the first xml. in any case, seems not to cause core dump.
+            //omp_set_num_threads(PhysiCell_settings.omp_num_threads);
 
             // time setup
-            std::string time_units = "min";
+            //// bue 20241230: think it's save to set only once while loading the first xml. in any case, seems not to cause core dump.
+            //std::string time_units = "min";
 
+            // delete cells
+            for (Cell* pCell: (*all_cells)) {
+                pCell->die();
+            }
 
+            // reset cell ID counter (BioFVM/BioFVM_basic_agent.cpp)
+            // bue 20240608: not strictely necessary!
+            std::cout << "bue: reset agent ID begin." << std::endl;
+            BioFVM::reset_max_basic_agent_ID();
+            std::cout << "bue: reset agent ID end." << std::endl;
 
             // bue 20240624: reset mesh0
             // bue 20241230: seem as such not to cause core dump!
             BioFVM::reset_BioFVM_substrates_initialized_in_dom();
 
+
             // Microenvironment setup //
             // bue 20241230: seem as such not to cause core dump ...
-            setup_microenvironment();  // modify this in the custom code
-
-            // PhysiCell setup //
-
-            // set mechanics voxel size, and match the data structure to BioFVM
-            // bue 20241230: seem as such not to cause core dump ...
+            setup_microenvironment(update_variables);  // modify this in the custom code
             double mechanics_voxel_size = 30;
             Cell_Container* cell_container = create_cell_container_for_microenvironment(microenvironment, mechanics_voxel_size);
 
 
-            // Users typically start modifying here.
-            reset_cell_types();  // bue 20240624: delete cells; reload cell type definitions
+            // Cell definitionvsetup //
+            // parse the cell definitions in the XML config file (core/PhysiCell_cell.cpp).
+            std::cout << "bue: initialize cell definitions begin." << std::endl;
+            initialize_cell_definitions_from_pugixml();
+            std::cout << "bue: initialize cell definitions end." << std::endl;
+
+            // generate the maps of cell definitions.
+            std::cout << "bue: build cell definition maps begin." << std::endl;
+            build_cell_definitions_maps();
+            std::cout << "bue: build cell definition maps end." << std::endl;
+
+
+            // Signal and rules setup //
+            // intializes cell signal and response dictionaries
+            std::cout << "bue: setup signal behavior dictionaries begin." << std::endl;
+            setup_signal_behavior_dictionaries();
+            std::cout << "bue: setup signal behavior dictionaries end." << std::endl;
+
+            // initializ cell rule definitions
+            std::cout << "bue: setup cell rules begin." << std::endl;
+            setup_cell_rules();
+            std::cout << "bue: setup cell rules end." << std::endl;
+
+            // summarize the cell defintion setup.
+            display_cell_definitions(std::cout);
+
+
+            //Tissue setup //
             setup_tissue();
-            // Users typically stop modifying here.
 
 
-
-
-            // set MultiCellDS save options
-            // bue 20241230: think it's save to set only once while loading the first xml. in any case, seems not to cause core dump.
-            //set_save_biofvm_mesh_as_matlab(true);
-            //set_save_biofvm_data_as_matlab(true);
-            //set_save_biofvm_cell_data(true);
-            //set_save_biofvm_cell_data_as_custom_matlab(true);
+            //// set MultiCellDS save options
+            //// bue 20241230: think it's save to set only once while loading the first xml. in any case, seems not to cause core dump.
+            ////set_save_biofvm_mesh_as_matlab(true);
+            ////set_save_biofvm_data_as_matlab(true);
+            ////set_save_biofvm_cell_data(true);
+            ////set_save_biofvm_cell_data_as_custom_matlab(true);
 
 
             // copy config file to output directory
@@ -397,6 +427,7 @@ int main(int argc, char* argv[]) {
             log_output(PhysiCell_globals.current_time, PhysiCell_globals.full_output_index, microenvironment, report_file);
             report_file.close();
         }
+
 
     //////////////////////
     // EPISODE LOOP END //
