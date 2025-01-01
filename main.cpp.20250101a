@@ -95,59 +95,37 @@ int main(int argc, char* argv[]) {
         // OpenMP setup
         omp_set_num_threads(PhysiCell_settings.omp_num_threads);
 
-        if (!update_variables) {
-            // bue 20240624: load parameter and density definitions
-            std::cout << "set user parameters ..." << std::endl;
-            std::cout << "set densities ..." << std::endl;
+        // bue 20240624: load parameter and density definitions
+        std::cout << "set user parameters ..." << std::endl;
+        std::cout << "set densities ..." << std::endl;
 
-            // Microenvironment setup, set mechanics voxel size, and match the data structure to BioFVM
-            setup_microenvironment(update_variables);  // modify this in the custom code
-            double mechanics_voxel_size = 30;
-            Cell_Container* cell_container = create_cell_container_for_microenvironment(microenvironment, mechanics_voxel_size);
-
-            // Users typically start modifying here.
-            generate_cell_types(update_variables);  // bue 20240624: load cell type definitions
-            setup_tissue();
-            update_variables = true;
-            // Users typically stop modifying here.
-
-            // set MultiCellDS save options
-            set_save_biofvm_mesh_as_matlab(true);
-            set_save_biofvm_data_as_matlab(true);
-            set_save_biofvm_cell_data(true);
-            set_save_biofvm_cell_data_as_custom_matlab(true);
-
-        } else {
-            // bue 20240624: overload parameter and density definitions
-            std::cout << "reset user parameters ..." << std::endl;
-            std::cout << "reset densities ..." << std::endl;
-
-            // reset cells
-            for (Cell* pCell: (*all_cells)) {
-                pCell->die();
-            }
-            BioFVM::reset_max_basic_agent_ID();
-
-            // bue 20240624: reset mesh0
-            BioFVM::reset_BioFVM_substrates_initialized_in_dom();
-
-            // bue 20241231: reset microenvironment
-            setup_microenvironment(update_variables);  // modify this in the custom code
-            double mechanics_voxel_size = 30;
-            Cell_Container* cell_container = create_cell_container_for_microenvironment(microenvironment, mechanics_voxel_size);
-
-            // Users typically start modifying here.
-            generate_cell_types(update_variables);  // bue 20240624: reset cell type definitions
-            setup_tissue();
-            // Users typically stop modifying here.
-
-            //// set MultiCellDS save options
-            //// bue 20241230: think it's save to set only once while loading the first xml. in any case, seems not to cause core dump.
-            ////set_save_biofvm_mesh_as_matlab(true);
-            ////set_save_biofvm_data_as_matlab(true);
-            ////set_save_biofvm_cell_data(true);
-            ////set_save_biofvm_cell_data_as_custom_matlab(true);
+        // reset cells
+        for (Cell* pCell: (*all_cells)) {
+            pCell->die();
         }
+        BioFVM::reset_max_basic_agent_ID();
+
+        // bue 20240624: reset mesh0
+        BioFVM::reset_BioFVM_substrates_initialized_in_dom();
+
+        // Microenvironment setup //
+        setup_microenvironment(update_variables);  // modify this in the custom code
+
+        // set mechanics voxel size, and match the data structure to BioFVM
+        double mechanics_voxel_size = 30;
+        Cell_Container* cell_container = create_cell_container_for_microenvironment(microenvironment, mechanics_voxel_size);
+
+        // Users typically start modifying here.
+        generate_cell_types(update_variables);  // bue 20240624: load cell type definitions
+        setup_tissue();
+        update_variables = true;
+        // Users typically stop modifying here.
+
+        // set MultiCellDS save options
+        set_save_biofvm_mesh_as_matlab(true);
+        set_save_biofvm_data_as_matlab(true);
+        set_save_biofvm_cell_data(true);
+        set_save_biofvm_cell_data_as_custom_matlab(true);
 
         // copy config file to output directory
         char copy_command [1024];
