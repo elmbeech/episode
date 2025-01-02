@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
 
         // set random max time in range
         //PhysiCell_settings.max_time = 1440 + (std::rand() % (10080 - 1440 + 1));
-        PhysiCell_settings.max_time = 10080;
+        PhysiCell_settings.max_time = 1440;
 
         // OpenMP setup
         omp_set_num_threads(PhysiCell_settings.omp_num_threads);

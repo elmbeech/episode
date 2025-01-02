@@ -20,7 +20,6 @@ static const std::vector<double> VECTOR_ZERO (4, ZERO);  // generate a 4 charact
 
 void generate_cell_types(bool update_variables) {
     std::cout << "generate cell types ..." << std::endl;
-    std::cout << "cell types can only be defined the first episode of the runtime!" << std::endl;
     // Put any modifications to default cell definition here if you
     // want to have "inherited" by other cell types.
     // This is a good place to set default functions.
@@ -68,42 +67,6 @@ void generate_cell_types(bool update_variables) {
 
     return;
 }
-
-/*
-void reload_cell_types(void) {
-    // cell_default initial definition
-    // NOP!
-
-    // parse the cell definitions in the XML config file (core/PhysiCell_cell.cpp).
-    std::cout << "bue: initialize cell definitions begin." << std::endl;
-    initialize_cell_definitions_from_pugixml();
-    std::cout << "bue: initialize cell definitions end." << std::endl;
-
-    // generate the maps of cell definitions.
-    std::cout << "bue: build cell definition maps begin." << std::endl;
-    build_cell_definitions_maps();
-    std::cout << "bue: build cell definition maps end." << std::endl;
-
-    // intializes cell signal and response dictionaries
-    std::cout << "bue: setup signal behavior dictionaries begin." << std::endl;
-    setup_signal_behavior_dictionaries();
-    std::cout << "bue: setup signal behavior dictionaries end." << std::endl;
-
-    // initializ cell rule definitions
-    std::cout << "bue: setup cell rules begin." << std::endl;
-    setup_cell_rules();
-    std::cout << "bue: setup cell rules end." << std::endl;
-
-    // Put any modifications to individual cell definitions here.
-    // This is a good place to set custom functions.
-    // NOP!
-
-    // summarize the cell defintion setup.
-    display_cell_definitions(std::cout);
-
-    return;
-}
-*/
 
 void setup_microenvironment(bool update_variables) {
     // set domain parameters

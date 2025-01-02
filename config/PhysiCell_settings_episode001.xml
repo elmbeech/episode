@@ -244,6 +244,10 @@
     </cell_rules>
 
     <user_parameters>
-        <number_of_cells type="int" units="none" description="initial number of cells (for each cell type)">5</number_of_cells>
+        <number_of_cells type="int" units="none" description="initial number of cells (for each cell type)">11</number_of_cells>
+        <my_double1 type="double" units="" description="">1.1</my_double1>
+        <my_int1 type="int" units="" description="">1</my_int1>
+        <my_bool1 type="bool" units="" description="">true</my_bool1>
+        <my_string1 type="string" units="" description="">one</my_string1>
     </user_parameters>
 </PhysiCell_settings>

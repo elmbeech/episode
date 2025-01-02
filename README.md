@@ -26,7 +26,10 @@ make
 SOMETIMES THE EPOCH WORKS FINE.
 SOMETIMES THE EPOCH RUNS INTO A CORE DUMPED (always at delete cells: custom_modules/custom.cpp ~ line 72.
 
-+ 20224-12-30: run 1024 episodes, random max time between 1440 min and 10080 min (1 day and 7 days), omp_num_threads 16, random_seed system_clock => no core dumped! ok.
++ 2024-12-30: run 1024 episodes, random max time between 1440 min and 10080 min (1 day and 7 days), omp_num_threads 16, random_seed system_clock => no core dumped! ok.
++ 2025-01-02: add and update parameter worx.
+
+CELLTYPE AND DENSITY do not yet update the names. The problem is within BioFVM/BioFVM_microenvironment.cpp.
 
 
 ## using the gnu debugger (on a linux)
