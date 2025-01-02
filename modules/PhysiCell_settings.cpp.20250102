@@ -96,21 +96,19 @@ bool load_PhysiCell_config_file( std::string filename , bool update_variables )
 	PhysiCell_settings.read_from_pugixml(); 
 	
 	// now read the microenvironment (optional) 
-	if( !update_variables	)
+	
+	if( !setup_microenvironment_from_XML( physicell_config_root, update_variables ) )
 	{
-		if( !setup_microenvironment_from_XML( physicell_config_root ) )
-		{
-			std::cout << std::endl 
-					  << "Warning: microenvironment_setup not found in " << filename << std::endl 
-					  << "         Either manually setup microenvironment in setup_microenvironment() (custom.cpp)" << std::endl
-					  << "         or consult documentation to add microenvironment_setup to your configuration file." << std::endl << std::endl; 
-		}
+		std::cout << std::endl 
+				  << "Warning: microenvironment_setup not found in " << filename << std::endl 
+				  << "         Either manually setup microenvironment in setup_microenvironment() (custom.cpp)" << std::endl
+				  << "         or consult documentation to add microenvironment_setup to your configuration file." << std::endl << std::endl; 
 	}
 	
 	// now read user parameters
 	
 	parameters.read_from_pugixml( physicell_config_root, update_variables );
-	
+
 	create_output_directory( PhysiCell_settings.folder );
 
 	return true; 	
@@ -327,8 +325,8 @@ void PhysiCell_Settings::read_from_pugixml( void )
 
 bool create_directories(const std::string &path)
 {
-	size_t pos = 0;
-	std::string currentPath;
+    size_t pos = 0;
+    std::string currentPath;
 
 	// Check for Unix-like absolute path or Windows absolute path with drive letter
 	if (path[0] == '\\' || path[0] == '/')
@@ -341,12 +339,12 @@ bool create_directories(const std::string &path)
 	}
 
 	while ((pos = path.find_first_of("/\\", pos)) != std::string::npos) {
-		currentPath = path.substr(0, pos++);
-		if (!create_directory(currentPath)) {
-			return false;
-		}
-	}
-	return create_directory(path);
+        currentPath = path.substr(0, pos++);
+        if (!create_directory(currentPath)) {
+            return false;
+        }
+    }
+    return create_directory(path);
 }
 
 bool create_directory(const std::string &path)
@@ -624,7 +622,7 @@ std::ostream& operator<<( std::ostream& os , const User_Parameters up )
 void User_Parameters::read_from_pugixml( pugi::xml_node parent_node , bool update_parameter )
 {
 	pugi::xml_node node = xml_find_node( parent_node , "user_parameters" );
-	
+
 	pugi::xml_node node1 = node.first_child();
 	int i = 0;
 	while( node1 )
@@ -633,7 +631,7 @@ void User_Parameters::read_from_pugixml( pugi::xml_node parent_node , bool updat
 		std::string units = node1.attribute( "units" ).value();
 		if( units == "" )
 		{ units = "dimensionless"; }
-		
+
 		std::string type = node1.attribute( "type" ).value();
 
 		if (type == "bool")
@@ -648,7 +646,6 @@ void User_Parameters::read_from_pugixml( pugi::xml_node parent_node , bool updat
 			else
 			{ bools.add_parameter( name , value, units ); }
 		}
-
 		else if (type == "int")
 		{
 			int value = xml_get_my_int_value(node1);
@@ -661,7 +658,6 @@ void User_Parameters::read_from_pugixml( pugi::xml_node parent_node , bool updat
 			else
 			{ ints.add_parameter( name , value, units ); }
 		}
-
 		else if (type == "double")
 		{
 			double value = xml_get_my_double_value(node1);
@@ -674,7 +670,6 @@ void User_Parameters::read_from_pugixml( pugi::xml_node parent_node , bool updat
 			else
 			{ doubles.add_parameter( name , value, units ); }
 		}
-
 		else if (type == "string")
 		{
 			std::string value = xml_get_my_string_value(node1);
@@ -687,7 +682,6 @@ void User_Parameters::read_from_pugixml( pugi::xml_node parent_node , bool updat
 			else
 			{ strings.add_parameter( name, value , units ); }
 		}
-
 		else // default if no type specified
 		{
 			double value = xml_get_my_double_value(node1);
@@ -701,7 +695,7 @@ void User_Parameters::read_from_pugixml( pugi::xml_node parent_node , bool updat
 			{ doubles.add_parameter( name , value, units ); }
 		}
 
-		node1 = node1.next_sibling();
+		node1 = node1.next_sibling(); 
 		i++; 
 	}
 	
@@ -728,7 +722,7 @@ template std::ostream& operator<<(std::ostream& os, const Parameter<int>& param)
 template std::ostream& operator<<(std::ostream& os, const Parameter<double>& param);
 template std::ostream& operator<<(std::ostream& os, const Parameter<std::string>& param);
 
-bool setup_microenvironment_from_XML( pugi::xml_node root_node )
+bool setup_microenvironment_from_XML( pugi::xml_node root_node , bool update_density )
 {
 	pugi::xml_node node; 
 
@@ -786,6 +780,8 @@ bool setup_microenvironment_from_XML( pugi::xml_node root_node )
 		// add the substrate 
 		if( i == 0 )
 		{ microenvironment.set_density( 0, name, units ); }
+		else if( update_density )
+		{ microenvironment.update_density( name, units ); }
 		else
 		{ microenvironment.add_density( name, units ); }
 		
@@ -1060,7 +1056,7 @@ bool setup_microenvironment_from_XML( pugi::xml_node root_node )
 	return true;  
 }
 
-bool setup_microenvironment_from_XML( void )
-{ return setup_microenvironment_from_XML( physicell_config_root ); }
+bool setup_microenvironment_from_XML( bool update_density )
+{ return setup_microenvironment_from_XML( physicell_config_root, update_density ); }
 
 };

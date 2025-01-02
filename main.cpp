@@ -43,6 +43,7 @@ bool update_variables = false;  // bue 20240624: (over)load solution.
 
 // main function
 int main(int argc, char* argv[]) {
+    // extract args take default if no args
 
     ////////////////////////
     // EPISODE LOOP BEGIN //
@@ -58,22 +59,9 @@ int main(int argc, char* argv[]) {
         // start //
         ///////////
 
-        // extract args take default if no args
-        std::string settingxml = "config/PhysiCell_settings.xml";
-        if (i_episode % 4 == 0) {
-            settingxml = "config/PhysiCell_settings_episode000.xml";
-        }
-        if (i_episode % 4 == 1) {
-            settingxml = "config/PhysiCell_settings_episode001.xml";
-        }
-        if (i_episode % 4 == 2) {
-            settingxml = "config/PhysiCell_settings_episode002.xml";
-        }
-        if (i_episode % 4 == 3) {
-            settingxml = "config/PhysiCell_settings_episode003.xml";
-        }
 
         // handle settings file (modules/PhysiCell_settings.cpp).
+        std::string settingxml = "config/PhysiCell_settings.xml";
         char filename[1024];
         std::ofstream report_file;
         std::vector<std::string> (*cell_coloring_function)(Cell*) = my_coloring_function;  // set a pathology coloring function
@@ -88,11 +76,10 @@ int main(int argc, char* argv[]) {
 
         // load xml file
         std::cout << "load setting xml " << settingxml << " ..." << std::endl;
+        std::cout << "(re)set user parameters ..." << std::endl;
         bool XML_status = false;
         XML_status = load_PhysiCell_config_file(settingxml, update_variables);
         if (!XML_status) { exit(-1); }
-
-        // set random max time in range
         //PhysiCell_settings.max_time = 1440 + (std::rand() % (10080 - 1440 + 1));
         PhysiCell_settings.max_time = 1440;
 
@@ -100,19 +87,17 @@ int main(int argc, char* argv[]) {
         omp_set_num_threads(PhysiCell_settings.omp_num_threads);
 
         if (!update_variables) {
-            // bue 20240624: load parameter and density definitions
-            std::cout << "set user parameters ..." << std::endl;
-            std::cout << "set densities ..." << std::endl;
-
             // Microenvironment setup, set mechanics voxel size, and match the data structure to BioFVM
-            setup_microenvironment(update_variables);  // modify this in the custom code
+            std::cout << "set densities ..." << std::endl;
+            setup_microenvironment();  // modify this in the custom code
             double mechanics_voxel_size = 30;
             Cell_Container* cell_container = create_cell_container_for_microenvironment(microenvironment, mechanics_voxel_size);
 
             // Users typically start modifying here.
-            generate_cell_types(update_variables);  // bue 20240624: load cell type definitions
+            std::cout << "set cell types ..." << std::endl;
+            generate_cell_types();  // bue 20240624: load cell type definitions
             setup_tissue();
-            update_variables = true;
+	    update_variables = true;
             // Users typically stop modifying here.
 
             // set MultiCellDS save options
@@ -122,10 +107,6 @@ int main(int argc, char* argv[]) {
             set_save_biofvm_cell_data_as_custom_matlab(true);
 
         } else {
-            // bue 20240624: overload parameter and density definitions
-            std::cout << "reset user parameters ..." << std::endl;
-            std::cout << "reset densities ..." << std::endl;
-
             // reset cells
             for (Cell* pCell: (*all_cells)) {
                 pCell->die();
@@ -136,12 +117,16 @@ int main(int argc, char* argv[]) {
             BioFVM::reset_BioFVM_substrates_initialized_in_dom();
 
             // bue 20241231: reset microenvironment
-            setup_microenvironment(update_variables);  // modify this in the custom code
+            //setup_microenvironment();  // modify this in the custom code
+            std::cout << "reset densities ..." << std::endl;
+            microenvironment.display_information(std::cout);
             double mechanics_voxel_size = 30;
             Cell_Container* cell_container = create_cell_container_for_microenvironment(microenvironment, mechanics_voxel_size);
 
             // Users typically start modifying here.
-            generate_cell_types(update_variables);  // bue 20240624: reset cell type definitions
+            //generate_cell_types();  // bue 20240624: reset cell type definitions
+            std::cout << "reset cell types ..." << std::endl;
+            display_cell_definitions(std::cout);
             setup_tissue();
             // Users typically stop modifying here.
 

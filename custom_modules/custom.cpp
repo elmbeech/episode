@@ -18,28 +18,27 @@ static const double ZERO = 0;
 static const std::vector<double> VECTOR_ZERO (4, ZERO);  // generate a 4 character long vector of zeros.
 
 
-void generate_cell_types(bool update_variables) {
+void generate_cell_types(void) {
     std::cout << "generate cell types ..." << std::endl;
+    std::cout << "cell types can only be defined the first episode of the runtime!" << std::endl;
     // Put any modifications to default cell definition here if you
     // want to have "inherited" by other cell types.
     // This is a good place to set default functions.
 
     // cell_default initial definition
-    if (!update_variables) {
-        initialize_default_cell_definition();
-        cell_defaults.phenotype.secretion.sync_to_microenvironment(&microenvironment);
+    initialize_default_cell_definition();
+    cell_defaults.phenotype.secretion.sync_to_microenvironment(&microenvironment);
 
-        cell_defaults.functions.volume_update_function = standard_volume_update_function;
-        cell_defaults.functions.update_velocity = standard_update_cell_velocity;
+    cell_defaults.functions.volume_update_function = standard_volume_update_function;
+    cell_defaults.functions.update_velocity = standard_update_cell_velocity;
 
-        cell_defaults.functions.update_migration_bias = NULL;
-        cell_defaults.functions.update_phenotype = NULL;  // update_cell_and_death_parameters_O2_based;
-        cell_defaults.functions.custom_cell_rule = NULL;
-        cell_defaults.functions.contact_function = NULL;
+    cell_defaults.functions.update_migration_bias = NULL;
+    cell_defaults.functions.update_phenotype = NULL;  // update_cell_and_death_parameters_O2_based;
+    cell_defaults.functions.custom_cell_rule = NULL;
+    cell_defaults.functions.contact_function = NULL;
 
-        cell_defaults.functions.add_cell_basement_membrane_interactions = NULL;
-        cell_defaults.functions.calculate_distance_to_membrane = NULL;
-    }
+    cell_defaults.functions.add_cell_basement_membrane_interactions = NULL;
+    cell_defaults.functions.calculate_distance_to_membrane = NULL;
 
     // parse the cell definitions in the XML config file (core/PhysiCell_cell.cpp).
     initialize_cell_definitions_from_pugixml();
@@ -55,12 +54,9 @@ void generate_cell_types(bool update_variables) {
 
     // Put any modifications to individual cell definitions here.
     // This is a good place to set custom functions.
-
-    if (!update_variables) {
-        cell_defaults.functions.update_phenotype = phenotype_function;
-        cell_defaults.functions.custom_cell_rule = custom_function;
-        cell_defaults.functions.contact_function = contact_function;
-    }
+    cell_defaults.functions.update_phenotype = phenotype_function;
+    cell_defaults.functions.custom_cell_rule = custom_function;
+    cell_defaults.functions.contact_function = contact_function;
 
     // summarize the cell defintion setup.
     display_cell_definitions(std::cout);
@@ -68,14 +64,15 @@ void generate_cell_types(bool update_variables) {
     return;
 }
 
-void setup_microenvironment(bool update_variables) {
+
+void setup_microenvironment(void) {
     // set domain parameters
 
     // Put any custom code to set non-homogeneous initial conditions or
     // extra Dirichlet nodes here.
 
     // initialize BioFVM
-    initialize_microenvironment(update_variables);
+    initialize_microenvironment();
 
     return;
 }
