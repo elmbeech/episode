@@ -62,6 +62,19 @@ int main(int argc, char* argv[]) {
 
         // handle settings file (modules/PhysiCell_settings.cpp).
         std::string settingxml = "config/PhysiCell_settings.xml";
+        if (i_episode % 4 == 0) {
+            settingxml = "config/PhysiCell_settings_episode000.xml";
+        }
+        if (i_episode % 4 == 1) {
+            settingxml = "config/PhysiCell_settings_episode001.xml";
+        }
+        if (i_episode % 4 == 2) {
+            settingxml = "config/PhysiCell_settings_episode002.xml";
+        }
+        if (i_episode % 4 == 3) {
+            settingxml = "config/PhysiCell_settings_episode003.xml";
+        }
+
         char filename[1024];
         std::ofstream report_file;
         std::vector<std::string> (*cell_coloring_function)(Cell*) = my_coloring_function;  // set a pathology coloring function
@@ -80,8 +93,9 @@ int main(int argc, char* argv[]) {
         bool XML_status = false;
         XML_status = load_PhysiCell_config_file(settingxml, update_variables);
         if (!XML_status) { exit(-1); }
+        PhysiCell_settings.max_time = 1440;  //10080;
         //PhysiCell_settings.max_time = 1440 + (std::rand() % (10080 - 1440 + 1));
-        PhysiCell_settings.max_time = 1440;
+        PhysiCell_settings.folder = folder;
 
         // OpenMP setup
         omp_set_num_threads(PhysiCell_settings.omp_num_threads);
@@ -89,7 +103,7 @@ int main(int argc, char* argv[]) {
         if (!update_variables) {
             // Microenvironment setup, set mechanics voxel size, and match the data structure to BioFVM
             std::cout << "set densities ..." << std::endl;
-            setup_microenvironment();  // modify this in the custom code
+            setup_microenvironment(update_variables);  // modify this in the custom code
             double mechanics_voxel_size = 30;
             Cell_Container* cell_container = create_cell_container_for_microenvironment(microenvironment, mechanics_voxel_size);
 
@@ -117,9 +131,9 @@ int main(int argc, char* argv[]) {
             BioFVM::reset_BioFVM_substrates_initialized_in_dom();
 
             // bue 20241231: reset microenvironment
-            //setup_microenvironment();  // modify this in the custom code
             std::cout << "reset densities ..." << std::endl;
-            microenvironment.display_information(std::cout);
+            setup_microenvironment(update_variables);  // modify this in the custom code
+            //microenvironment.display_information(std::cout);
             double mechanics_voxel_size = 30;
             Cell_Container* cell_container = create_cell_container_for_microenvironment(microenvironment, mechanics_voxel_size);
 
