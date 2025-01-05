@@ -39,7 +39,7 @@ using namespace BioFVM;
 using namespace PhysiCell;
 
 // global variable
-bool update_variables = false;  // bue 20240624: (over)load solution.
+bool reload = false;  // bue 20240624: (over)load solution.
 
 // main function
 int main(int argc, char* argv[]) {
@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
     // EPISODE LOOP BEGIN //
     ////////////////////////
 
-    for (int i_episode = 0; i_episode < 4; i_episode++)
+    for (int i_episode = 0; i_episode < 64; i_episode++)
     {
         std::cout << "run episode: " << i_episode << " !" << std::endl;
         std::string folder = "output00" + std::to_string( i_episode % 4);
@@ -62,6 +62,7 @@ int main(int argc, char* argv[]) {
 
         // handle settings file (modules/PhysiCell_settings.cpp).
         std::string settingxml = "config/PhysiCell_settings.xml";
+        /*
         if (i_episode % 4 == 0) {
             settingxml = "config/PhysiCell_settings_episode000.xml";
         }
@@ -74,6 +75,7 @@ int main(int argc, char* argv[]) {
         if (i_episode % 4 == 3) {
             settingxml = "config/PhysiCell_settings_episode003.xml";
         }
+        */
 
         char filename[1024];
         std::ofstream report_file;
@@ -90,20 +92,32 @@ int main(int argc, char* argv[]) {
         // load xml file
         std::cout << "load setting xml " << settingxml << " ..." << std::endl;
         std::cout << "(re)set user parameters ..." << std::endl;
+        std::cout << "reload?... " << reload << std::endl;
         bool XML_status = false;
-        XML_status = load_PhysiCell_config_file(settingxml, update_variables);
+        XML_status = load_PhysiCell_config_file(settingxml, reload);
+        //XML_status = load_PhysiCell_config_file(settingxml);
         if (!XML_status) { exit(-1); }
-        PhysiCell_settings.max_time = 1440;  //10080;
-        //PhysiCell_settings.max_time = 1440 + (std::rand() % (10080 - 1440 + 1));
+        PhysiCell_settings.max_time = 1440 + (std::rand() % (5040 - 1440 + 1));
+        //PhysiCell_settings.max_time = 1440; //1440; //10080;
         PhysiCell_settings.folder = folder;
 
         // OpenMP setup
         omp_set_num_threads(PhysiCell_settings.omp_num_threads);
 
-        if (!update_variables) {
-            // Microenvironment setup, set mechanics voxel size, and match the data structure to BioFVM
+        if (!reload) {
+            //std::cout << "load setting xml " << settingxml << " ..." << std::endl;
+	    //std::cout << "set user parameters ..." << std::endl;
+            //bool XML_status = false;
+            //XML_status = load_PhysiCell_config_file(settingxml, reload);
+            //XML_status = load_PhysiCell_config_file(settingxml);
+            //if (!XML_status) { exit(-1); }
+            //PhysiCell_settings.max_time = 1440;  //10080;
+            //PhysiCell_settings.max_time = 1440 + (std::rand() % (10080 - 1440 + 1));
+            //PhysiCell_settings.folder = folder;
+
+	    // Microenvironment setup, set mechanics voxel size, and match the data structure to BioFVM
             std::cout << "set densities ..." << std::endl;
-            setup_microenvironment(update_variables);  // modify this in the custom code
+            setup_microenvironment(reload);  // modify this in the custom code
             double mechanics_voxel_size = 30;
             Cell_Container* cell_container = create_cell_container_for_microenvironment(microenvironment, mechanics_voxel_size);
 
@@ -111,7 +125,7 @@ int main(int argc, char* argv[]) {
             std::cout << "set cell types ..." << std::endl;
             generate_cell_types();  // bue 20240624: load cell type definitions
             setup_tissue();
-	    update_variables = true;
+	    reload = true;
             // Users typically stop modifying here.
 
             // set MultiCellDS save options
@@ -121,6 +135,14 @@ int main(int argc, char* argv[]) {
             set_save_biofvm_cell_data_as_custom_matlab(true);
 
         } else {
+            bool XML_status = false;
+            //XML_status = load_PhysiCell_config_file(settingxml, reload);
+            //XML_status = load_PhysiCell_config_file(settingxml);
+            //if (!XML_status) { exit(-1); }
+            //PhysiCell_settings.max_time = 1440;  //10080;
+            //PhysiCell_settings.max_time = 1440 + (std::rand() % (10080 - 1440 + 1));
+            //PhysiCell_settings.folder = folder;
+
             // reset cells
             for (Cell* pCell: (*all_cells)) {
                 pCell->die();
@@ -132,8 +154,8 @@ int main(int argc, char* argv[]) {
 
             // bue 20241231: reset microenvironment
             std::cout << "reset densities ..." << std::endl;
-            setup_microenvironment(update_variables);  // modify this in the custom code
-            //microenvironment.display_information(std::cout);
+            setup_microenvironment(reload);  // modify this in the custom code
+            microenvironment.display_information(std::cout);
             double mechanics_voxel_size = 30;
             Cell_Container* cell_container = create_cell_container_for_microenvironment(microenvironment, mechanics_voxel_size);
 
