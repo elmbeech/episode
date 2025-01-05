@@ -73,7 +73,6 @@ void setup_microenvironment(bool reload) {
 
     // initialize BioFVM
     initialize_microenvironment(reload);
-    //initialize_microenvironment();
 
     return;
 }

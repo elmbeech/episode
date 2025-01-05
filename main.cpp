@@ -62,20 +62,18 @@ int main(int argc, char* argv[]) {
 
         // handle settings file (modules/PhysiCell_settings.cpp).
         std::string settingxml = "config/PhysiCell_settings.xml";
-        /*
-        if (i_episode % 4 == 0) {
-            settingxml = "config/PhysiCell_settings_episode000.xml";
-        }
-        if (i_episode % 4 == 1) {
-            settingxml = "config/PhysiCell_settings_episode001.xml";
-        }
-        if (i_episode % 4 == 2) {
-            settingxml = "config/PhysiCell_settings_episode002.xml";
-        }
-        if (i_episode % 4 == 3) {
-            settingxml = "config/PhysiCell_settings_episode003.xml";
-        }
-        */
+        //if (i_episode % 4 == 0) {
+        //    settingxml = "config/PhysiCell_settings_episode000.xml";
+        //}
+        //if (i_episode % 4 == 1) {
+        //    settingxml = "config/PhysiCell_settings_episode001.xml";
+        //}
+        //if (i_episode % 4 == 2) {
+        //    settingxml = "config/PhysiCell_settings_episode002.xml";
+        //}
+        //if (i_episode % 4 == 3) {
+        //    settingxml = "config/PhysiCell_settings_episode003.xml";
+        //}
 
         char filename[1024];
         std::ofstream report_file;
@@ -135,7 +133,7 @@ int main(int argc, char* argv[]) {
             set_save_biofvm_cell_data_as_custom_matlab(true);
 
         } else {
-            bool XML_status = false;
+            //bool XML_status = false;
             //XML_status = load_PhysiCell_config_file(settingxml, reload);
             //XML_status = load_PhysiCell_config_file(settingxml);
             //if (!XML_status) { exit(-1); }
